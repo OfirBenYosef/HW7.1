@@ -3,12 +3,18 @@
 #include <stdlib.h>
 #include "grades.h"
 
+<<<<<<< HEAD
 
 typedef struct grades grades;
 typedef struct student_data student_data;
 typedef struct course_data;
 //declartion
 static int course_init(struct list *list, const char *name, int grade);
+=======
+#define STUDENT 1
+#define GRADE 2
+
+>>>>>>> 2926857c1658172069cdc47bb20a81cdc34367f4
 struct grades{
 	struct list **students;
     //clone_func_t clone;//to do
@@ -105,7 +111,11 @@ struct grades* grades_init(){
 /**
  * @brief Destroys "grades", de-allocate all memory!
  */
-void grades_destroy(struct grades *grades);
+void grades_destroy(struct grades *grades){
+	
+	list_destroy(grades);
+
+}
 
 /**
  * @brief Adds a student with "name" and "id" to "grades"
@@ -115,8 +125,13 @@ void grades_destroy(struct grades *grades);
  */
 int grades_add_student(struct grades *grades, const char *name, int id){
 	if (!grades || !name || !id) {
+<<<<<<< HEAD
 			//print_no_can_do, do
 		return NULL; //or return
+=======
+			print_out(STUDENT);
+		exit; //or return
+>>>>>>> 2926857c1658172069cdc47bb20a81cdc34367f4
 	}
 	else{
 		struct node *curr_node =find_in_grades(id,(grades->students));
@@ -141,7 +156,7 @@ int grades_add_grade(struct grades *grades,
                      int grade)
 {
 	if (!grades ||(grade <0)||(grade>100)|| !id){
-			//print_no_can_do, do
+			print_out(GRADE)
 		exit; //or return
 		}
 
@@ -214,7 +229,7 @@ float grades_calc_avg(struct grades *grades, int id, char **out){
 int grades_print_student(struct grades *grades, int id){
 	if (!grades || !id) {
 		//print_no_can_do, do
-		exit; //or return
+		return NULL; //or return
 	}
 	else{
 		struct student_data *curr_student_data;
@@ -227,7 +242,7 @@ int grades_print_student(struct grades *grades, int id){
 		}
 		else{
 
-			return print_grades((student_data->name),(curr_student_data->student_grades));
+			return print_grades(student_data,(curr_student_data->student_grades));
 		}
 	}
 	return NULL;// ?
@@ -246,7 +261,62 @@ int grades_print_student(struct grades *grades, int id){
  * in which they were inserted into "grades"
  */
 
-int grades_print_all(struct grades *grades);
+int grades_print_all(struct grades *grades){
+	int length=list_size(grades->students);
+	for(int i=0; i<length;i++){
+	struct student_data *student_data;
+	student_data=students[i]->student_data;
+	int id=(int)(student_data->id);
+	int print=grades_print_student(grades, id);
+	if(print==NULL){
+		exit;
+	}
+	}
+	return 0;
+};
+
+void print_out(int error){
+	if(!error){
+		exit;
+	}
+	if(error==STUDENT){
+		printf("Cannot add student!");
+	}
+	if(error==GRADE){
+		printf("Cannot add grade!");
+	}
+	
+	//error for print student grades at func grades print 
+};
+void print_avg(struct student_data *student_data, struct student_grades* student_grades){
+	char id=(char)(student_data-> id);
+	char name=(char)(student_data-> name);
+	char avg=(char)(student_data-> avg);
+
+	printf("The average of %s (id: %s) is %s", name, id, avg);
+};
+void print_grades(struct student_data *student_data, struct student_grades* student_grades){
+	char id=(char)(student_data-> id);
+	char name=(char)(student_data-> name);
+	printf("%s %s:", id, name);
+	int length=list_size(student_grades);// student_data->num_of_course
+	struct node *curr_course=list_begin(student_grades);
+	if(!curr_course){
+		return;
+	}
+	for(int i=0,i<length-1,i++){
+		char course=(char)(curr_course->course_data->course_name);
+		char grade=(char)(curr_course->course_data->grade);
+		
+		printf("%s %s,", course, grade);
+		curr_course=list_next(curr_course);
+	}
+		char course=(char)(curr_course->course_data->course_name);
+		char grade=(char)(curr_course->course_data->grade);
+		
+		printf("%s %s\n", course, grade);
+
+	};
 
 static struct node *find_id(int id,struct list *list){
 
@@ -263,7 +333,13 @@ static struct node *find_id(int id,struct list *list){
 		return NULL;
 }
 
+<<<<<<< HEAD
 static struct node *find_course(const char *name,struct list *list){ 
+=======
+
+
+static struct *node find_course(const char *name,struct list *list){
+>>>>>>> 2926857c1658172069cdc47bb20a81cdc34367f4
 
 		struct node *curr_course = list_begin(list);
 		while(curr_course){
