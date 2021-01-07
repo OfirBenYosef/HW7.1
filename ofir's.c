@@ -10,11 +10,9 @@ typedef struct course_data course_data;
 typedef struct node node;
 typedef struct list list;
 //declartion
+#define EXIT 100
 struct grades{
 	list **students;
-    //clone_func_t clone;//to do
-	//destroy_func_t destroy;//to do
-
 };
 /*the node element*/
 struct student_data {
@@ -29,37 +27,11 @@ struct course_data {
 	int grade;
 	char *course_name;
 };
- void* student_data_clone(void *elem , void **out){
- 	student_data *to_be_clone=(student_data*)elem;
-	int *new_id=(int*)(malloc(sizeof(int)));
-	char *temp;
-	strcpy(temp,(char*)(to_be_clone->name));
-	char *new_name=(char*)(malloc(sizeof(char*)*(strlen(temp)+1)));
-	int *new_avg=(int*)(malloc(sizeof(int)));
-	int *new_num_of_course=(int*)(malloc(sizeof(int)));
-	list *new_list=(list*)(malloc(sizeof(list*))) ;
-	*out=(student_data*)malloc(sizeof(student_data));
-    if (!out ||!new_num_of_course ||!new_avg ||!new_name ||!new_id ||!new_list) {
-        return NULL;
-        free(new_id);
-        free(new_name);
-        free(new_avg);
-        free(new_num_of_course);
-        free(out);
-        free(new_list);
-    }
+void course_data_destroy (void *elem);
+void student_data_destroy (void *elem);
+int course_data_clone(void *elem, void **out);
+int student_data_clone(void *elem , void **out);
 
-    else{
-    	to_be_clone->id=*new_id;
-    	to_be_clone->num_of_course=*new_num_of_course;
-    	to_be_clone->avg=*new_avg;
-		strcpy(to_be_clone->name,new_name);
-		to_be_clone->student_grades=list_init(course_data_clone,course_data_destroy);
-		out=&to_be_clone;
-		
-    }
-    return out;
-} 
 static node *find_id(int id,list **list){
 	    node *curr_student = list_begin(*list);
 		while(curr_student){
@@ -113,11 +85,11 @@ static int student_init(list *list, const char *name, int id){
 	}
 	return new;
 }
-static node *find_course(const char *name,list *list){ 
-		node *curr_course = list_begin(list);
+static node *find_course(const char *name,list **list){ 
+		node *curr_course = list_begin(*list);
 		while(curr_course){
 			course_data *curr_course_data=list_get(curr_course);
-			const char *curr_course_name=(char*)(*curr_course_data->course_name);
+			const char *curr_course_name=(curr_course_data->course_name);
 			if(!strcmp(curr_course_name,name)){
 				return curr_course;
 			}
@@ -134,7 +106,7 @@ float grades_calc_avg(struct grades *grades, int id, char **out){
 	}
 	else{
 		struct student_data *curr_student_data;
-		struct node *curr_node = find_in_grades(id,(grades->students));
+		struct node *curr_node = find_id(id,(grades->students));
 		if(!curr_node){
 			//no cant_do
 			return -1;
@@ -142,24 +114,21 @@ float grades_calc_avg(struct grades *grades, int id, char **out){
 		}
 		else{
 			curr_student_data=list_get(curr_node);
+			*out=curr_student_data->name;
 			return (curr_student_data->avg);
 		}
 	}
-	return -1;	
+	return EXIT;	;
 }
-int grades_add_grade(struct grades *grades,
-                     const char *name,
-                     int id,
-                     int grade){
+int grades_add_grade(struct grades *grades,const char *name,int id,int grade){
 
 	if(!grades ||(grade <0)||(grade>100)|| !id){
-			//print_no_can_do, do
-		return 0; //or return
+		return EXIT; 
 		}
 
 	else{
 		student_data *curr_student_data;
-		node *curr_node = find_in_grades(id,(grades->students));
+		node *curr_node = find_id(id,(grades->students));
 		if(curr_node){
 			curr_student_data=list_get(curr_node);
 			if(!find_course(name,(curr_student_data->student_grades))){
@@ -168,11 +137,15 @@ int grades_add_grade(struct grades *grades,
 				int temp_num=curr_student_data->num_of_course;
 				curr_student_data->avg=(temp_avg+grade/(temp_num+1));
 				curr_student_data->num_of_course=temp_num+1;
-				return course_init((curr_student_data->student_grades) ,name,grade);
+				if(!course_init(*(curr_student_data->student_grades) ,name,grade)){
+					return EXIT;
+				}
+				else{
+					return 0;
+				}
 			}
 			else{
-				//print_no_cant_do,do
-				return NULL;
+				return EXIT;
 			}
 		}
 	}
@@ -180,23 +153,18 @@ int grades_add_grade(struct grades *grades,
 
 int grades_add_student(struct grades *grades, const char *name, int id){
 	if (!grades || !name || !id) {
-			//print_no_can_do, do
-		return NULL; //or return
+		return EXIT; 
 	}
 	else{
-		struct node *curr_node =find_in_grades(id,(grades->students));
+		struct node *curr_node =find_id(id,(grades->students));
 		if(!curr_node){
-			return student_init((grades->students),name,id);
+			return student_init(*(grades->students),name,id);
 		}
-		else{
-			//print no_can_do
-		}
+
 	}
 	
-	return -1;
+	return EXIT;
 }
-
-
 grades* grades_init(){
     grades *grades_new;
     list **studets_list;
@@ -208,8 +176,55 @@ grades* grades_init(){
 		free(studets_list);
 		return NULL;
 	}
-	studets_list=list_init(student_data_clone,student_data_destroy);//put
+	*studets_list=list_init(student_data_clone,student_data_destroy);
 	grades_new-> students = studets_list;
 	return grades_new;
 }
+void  course_data_destroy (void *elem){
+	course_data *to_be_destroy=(course_data*)elem;
+	free((to_be_destroy->course_name));
+	free(elem);
+	exit;
+}
+void student_data_destroy (void *elem){
+	student_data *to_be_destroy=(student_data*)elem;
+	free((to_be_destroy->name));
+	/*free the course list*/
+	list_destroy(*(to_be_destroy->student_grades));
+	free(elem);
+	exit;
+}
+int student_data_clone(void *elem, void **out){
+	char *temp=NULL;
+	course_data *to_be_clone = (course_data*)elem;
+	strcpy(temp,(to_be_clone->course_name));
+	//char *new_name= (char*)malloc(sizeof(char*)*(strlen(temp)+1));
+	*out=(course_data*)malloc(sizeof(course_data));
+    if (!out) {
+    	//free(new_name);
+    	free(out);
+        return EXIT;
+    }
+    else{
+    *out=to_be_clone;
+    //strcpy((out->course_name),(to_be_clone->course_name));
+    }
+    return 0;
+}
 
+int course_data_clone (void *elem, void **out){
+	char *temp=NULL;
+	course_data *to_be_clone =(course_data*)elem;
+	strcpy(temp,(to_be_clone->course_name));
+	//char *new_name= (char*)malloc(sizeof(char*)*(strlen(temp)+1));
+	*out=(course_data*)malloc(sizeof(course_data));
+    if (!out) {
+    	//free(new_name);
+    	free(out);
+        return EXIT;
+    }
+    else{
+    *out=to_be_clone;
+    }
+    return 0;
+}
