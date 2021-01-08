@@ -1,16 +1,11 @@
 CC=gcc
-CFLAGS=-Wall -g
+CFLAGS=-Wall -g -std=c99
 CLINK=$(CC)
-
-prog1.exe: linked-list.o grades.o main.o
-	$(CLINK) linked-list.o grades.o -o prog1.exe 
-
-linked-list.o: linked-list.h
-liblinked-list.os:linked-list.h 
-	$(CLINK) -shared linked-list.o -o liblinked-list.os
+LD_LIBRARY_PATH=./
+libgrades.so: grades.o 
+	$(CLINK) -shared grades.o -o libgrades.so -llinked-list -L.
 
 grades.o: linked-list.h grades.h grades.c
-
-
+	$(CLINK) $(CFLAGS) -c -fpic grades.c
 clean:
-	rm -f *.o *.exe
+	rm -f *.o 
