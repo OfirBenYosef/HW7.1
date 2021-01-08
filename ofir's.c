@@ -149,6 +149,7 @@ int grades_add_grade(struct grades *grades,const char *name,int id,int grade){
 			}
 		}
 	}
+	return 0;
 }
 
 int grades_add_student(struct grades *grades, const char *name, int id){
@@ -165,6 +166,7 @@ int grades_add_student(struct grades *grades, const char *name, int id){
 	
 	return EXIT;
 }
+
 grades* grades_init(){
     grades *grades_new;
     list **studets_list;
@@ -184,7 +186,6 @@ void  course_data_destroy (void *elem){
 	course_data *to_be_destroy=(course_data*)elem;
 	free((to_be_destroy->course_name));
 	free(elem);
-	exit;
 }
 void student_data_destroy (void *elem){
 	student_data *to_be_destroy=(student_data*)elem;
@@ -192,22 +193,23 @@ void student_data_destroy (void *elem){
 	/*free the course list*/
 	list_destroy(*(to_be_destroy->student_grades));
 	free(elem);
-	exit;
 }
 int student_data_clone(void *elem, void **out){
 	char *temp=NULL;
-	course_data *to_be_clone = (course_data*)elem;
-	strcpy(temp,(to_be_clone->course_name));
-	//char *new_name= (char*)malloc(sizeof(char*)*(strlen(temp)+1));
+	student_data *to_be_clone = (student_data*)elem;
+	strcpy(temp,(to_be_clone->name));
+	char *new_name= (char*)malloc(sizeof(char*)*(strlen(temp)+1));
 	*out=(course_data*)malloc(sizeof(course_data));
-    if (!out) {
-    	//free(new_name);
+    if (!out ||!new_name) {
+    	free(new_name);
     	free(out);
         return EXIT;
     }
     else{
+
+    to_be_clone->name=new_name;
+    strcpy(to_be_clone->name,temp);
     *out=to_be_clone;
-    //strcpy((out->course_name),(to_be_clone->course_name));
     }
     return 0;
 }
@@ -216,14 +218,16 @@ int course_data_clone (void *elem, void **out){
 	char *temp=NULL;
 	course_data *to_be_clone =(course_data*)elem;
 	strcpy(temp,(to_be_clone->course_name));
-	//char *new_name= (char*)malloc(sizeof(char*)*(strlen(temp)+1));
+	char *new_name= (char*)malloc(sizeof(char*)*(strlen(temp)+1));
 	*out=(course_data*)malloc(sizeof(course_data));
-    if (!out) {
-    	//free(new_name);
+    if (!out || !new_name) {
+    	free(new_name);
     	free(out);
         return EXIT;
     }
     else{
+     to_be_clone->course_name=new_name;
+    strcpy(to_be_clone->course_name,temp);
     *out=to_be_clone;
     }
     return 0;
