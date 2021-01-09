@@ -70,14 +70,14 @@ static int student_init(list *list_list, const char *name, int id){
 
 	student_data *new_student_data;
 	int new;
-	struct list **new_list;
-	new_list= (list**)(malloc(sizeof(list*)));
+	
 	new_student_data=(student_data*)malloc(sizeof(student_data));
 	new_student_data->name=(char*)malloc(sizeof(char*)*(strlen(name)+1));
-	if (!new_student_data|| !(new_student_data->name) ||!new_list) {
+	new_student_data->student_grades= (list**)(malloc(sizeof(list*)));
+	if (!new_student_data|| !(new_student_data->name) ||!(new_student_data->student_grades)) {
 			free(new_student_data->name);
 			free(new_student_data);
-			free(new_list);
+			free(new_student_data->student_grades);
 			return 0;
 	}
 	else{
@@ -86,8 +86,7 @@ static int student_init(list *list_list, const char *name, int id){
 	strcpy((new_student_data->name),name);
 	new_student_data->avg=0;
 	new_student_data->num_of_course=0;
-	*new_list=list_init(course_data_clone,course_data_destroy);
-	new_student_data->student_grades=new_list;
+	*new_student_data->student_grades=list_init(course_data_clone,course_data_destroy);
 	new =list_push_back(list_list,new_student_data);
 	}
 	return new;
@@ -144,6 +143,7 @@ int grades_add_grade(struct grades *grades,const char *name,int id,int grade){
 				int temp_num=curr_student_data->num_of_course;
 				curr_student_data->avg=((temp_avg*temp_num+grade)/(temp_num+1));
 				curr_student_data->num_of_course=temp_num+1;
+
 				return (course_init(*(curr_student_data->student_grades),name,grade));
 			}
 			else{
