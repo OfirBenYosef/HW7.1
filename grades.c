@@ -4,27 +4,20 @@
 #include "grades.h"
 #include "linked-list.h"
 
-
-
 typedef struct grades grades;
 typedef struct student_data student_data;
 typedef struct course_data course_data;
+typedef struct node node;
+typedef struct list list;
 //declartion
-static int course_init(struct list *list, const char *name, int grade);
-#define STUDENT 1
-#define GRADE 2
-#define ERROR 100
-
-
+#define EXIT 100
+#define SUCCESS 0
 struct grades{
-	struct list **students;
-    //clone_func_t clone;//to do
-	//destroy_func_t destroy;//to do
-
+	list **students;
 };
 /*the node element*/
 struct student_data {
-	struct list **student_grades;
+	list **student_grades;
 	int id;
 	char *name;
 	int avg;
@@ -35,289 +28,18 @@ struct course_data {
 	int grade;
 	char *course_name;
 };
-/*
-void* student_data_clone(void *elem , void **out){
+void course_data_destroy (void *elem);
+void student_data_destroy (void *elem);
+int course_data_clone(void *elem, void **out);
+int student_data_clone(void *elem , void **out);
+static int print_grades(struct student_data *student_data, list **student_grades);
 
-	int new_id;
-	char *new_name;
-	strcpy(new_name,(char*)(*elem));
-	int new_avg;
-	int new_num_of_course;
-	int space_need= (3*sizeof(int)+(strlen(new_name)+1)*sizeof(char*)+sizeof(int*));
-	*out=(struct student_data)malloc(space_need);
-    if (!out) {
-        return NULL;
-    }
-    else{
-    	out -> student_grades=course_data_clone(elem->student_grades);
-	    out-> id =(int)(elem->id);
-		strcpy((out ->name),(char*)(elem->name);
-		out->avg=(int)(elem->avg);
-		out->num_of_course=(int)(elem->num_of_course);
-		int a =list_insert(list, new_node, new_student_data);
-    }
-    return out;
-}
 
-void* course_data_clone (void *elem, void **out){
-	int new_grade;
-	char *new_name;
-	*out=(struct course_data)malloc(2*sizeof(int));
-    if (!out) {
-        return NULL;
-    }
-    else{
-    	out->grade = (int)(elem->grade);
-    	out->course_name = (char*)(elem->course_name);
-    }
-    return out;
-}
-void* student_data_destroy (void *elem){
-	
-	free((int)(elem->id));
-	free((int)(elem->avg));
-	free((int)(elem->num_of_course));
-
-	free((str*)(elem->name));
-	/*free course list*/
-	/*list_destroy(elem->student_grades);
-	free(elem);/
-}
-void* course_data_destroy (void *elem){
-	free((int)(elem->grade));
-	free((char*)(elem->course_name));
-	free(elem);
-}*/
-/**
- * @brief Initializes the "grades" data-structure.
- * @returns A pointer to the data-structure, of NULL in case of an error
- */
-struct grades* grades_init(){
-	struct grades *grades;
-	struct list **studets_list;
-	grades=(struct grades*)malloc(sizeof(*grades));
-	studets_list=(struct list**)malloc(sizeof(struct list*));
-	if (!grades || !studets_list) {
-		/* Out of memory - must free what was allocated */
-		free(grades);
-		free(studets_list);
-		return NULL;
-	}
-	studets_list=list_init(student_data_clone,student_data_destroy);//put
-	grades-> students = studets_list;
-	return grades;
-}
-   
-
-/**
- * @brief Destroys "grades", de-allocate all memory!
- */
-void grades_destroy(struct grades *grades){
-	
-	list_destroy(grades);
-
-}
-
-/**
- * @brief Adds a student with "name" and "id" to "grades"
- * @returns 0 on success
- * @note Failes if "grades" is invalid, or a student with 
- * the same "id" already exists in "grades"
- */
-int grades_add_student(struct grades *grades, const char *name, int id){
-	if (!grades || !name || !id) {
-
-		return ERROR;
-	}
-	else{
-		struct node *curr_node =find_in_grades(id,(grades->students));
-		if(!curr_node){
-			 
-			
-			return student_init((grades->students),name,id);
-		}
-
-		else{
-			return ERROR;
-		}
-	}
-	
-	return NULL;
-
-}
-
-int grades_add_grade(struct grades *grades,
-                     const char *name,
-                     int id,
-                     int grade)
-{
-	if (!grades ||(grade <0)||(grade>100)|| !id){
-		return ERROR;
-		}
-
-	else{
-		struct student_data *curr_student_data;
-		struct node *curr_node = find_in_grades(id,(grades->students));
-		if(curr_node){
-			curr_student_data=list_get(curr_node);
-			if(!find_course(name,(curr_student_data->student_grades))){
-				/* clc the new avg*/
-				int temp_avg=curr_student_data->avg;
-				int temp_num=curr_student_data->num_of_course;
-				curr_student_data->avg=(temp_avg+grade/(temp_num+1));
-				curr_student_data->num_of_course=temp_num+1;
-				return course_init((curr_student_data->student_grades) ,name,grade);
-			}
-			else{
-				return ERROR;
-			}
-		
-		}
-		else{
-			exit;
-		}
-	}
-}
-
-/**
- * @brief Calcs the average of the student with "id" in "grades".
- * @param[out] out This method sets the variable pointed by "out" to the
- * student's name. Needs to allocate memory. The user is responsible for
- * freeing the memory.
- * @returns The average, or -1 on error
- * @note Fails if "grades" is invalid, or if a student with "id" does not exist
- * in "grades".
- * @note If the student has no courses, the average is 0.
- * @note On error, sets "out" to NULL.
- */
-float grades_calc_avg(struct grades *grades, int id, char **out){
-	if (!grades ||!out|| !id) {
-	
-		return -1;
-	}
-	else{
-		struct student_data *curr_student_data;
-		struct node *curr_node = find_in_grades(id,(grades->students));
-		if(!curr_node){
-			
-			return -1;
-
-		}
-		else{
-			curr_student_data=list_get(curr_node);
-			return (curr_student_data->avg);
-		}
-	}
-	return -1;	
-}
-
-/**
- * @brief Prints the courses of the student with "id" in the following format:
- * STUDENT-NAME STUDENT-ID: COURSE-1-NAME COURSE-1-GRADE, [...]
- * @returns 0 on success
- * @note Fails if "grades" is invalid, or if a student with "id" does not exist
- * in "grades".
- * @note The courses should be printed according to the order 
- * in which they were inserted into "grades"
- */
-int grades_print_student(struct grades *grades, int id){
-	if (!grades || !id) {
-		
-		return ERROR; 
-	}
-	else{
-		struct student_data *curr_student_data;
-		struct node *curr_node = find_in_grades(id,(grades->students));
-		curr_student_data=list_get(curr_node);
-		if(!curr_node){
-			return ERROR;
-
-		}
-		else{
-
-			return print_grades(curr_student_data,(curr_student_data->student_grades));
-		}
-	}
-	return ERROR;
-
-}
-
-/**
- * @brief Prints all students in "grade", in the following format:
- * STUDENT-1-NAME STUDENT-1-ID: COURSE-1-NAME COURSE-1-GRADE, [...]
- * STUDENT-2-NAME STUDENT-2-ID: COURSE-1-NAME COURSE-1-GRADE, [...]
- * @returns 0 on success
- * @note Fails if "grades" is invalid
- * @note The students should be printed according to the order 
- * in which they were inserted into "grades"
- * @note The courses should be printed according to the order 
- * in which they were inserted into "grades"
- */
-
-int grades_print_all(struct grades *grades){
-
-	int length=list_size(grades->students);
-	for(int i=0; i<length;i++){
-	struct student_data *curr_student;
-	curr_student=grades->students[i];
-	->student_data;
-	int id=(int)(student_data->id);
-	int print=grades_print_student(grades, id);
-	if(print==NULL){
-		exit;
-	}
-	}
-	return 0;
-}
-
-/*void print_out(int error){
-	if(!error){
-		exit;
-	}
-	if(error==STUDENT){
-		printf("Cannot add student!");
-	}
-	if(error==GRADE){
-		printf("Cannot add grade!");
-	}
-	
-	//error for print student grades at func grades print 
-}*/
-/*void print_avg(struct student_data *student_data, struct student_grades* student_grades){
-	char *id=(char*)(student_data-> id);
-	char *name=(char*)(student_data-> name);
-	char *avg=(char*)(student_data-> avg);
-
-	printf("The average of %s (id: %s) is %s", name, id, avg);
-}*/
-void print_grades(struct student_data *student_data, struct student_grades* student_grades){
-	char *id=(char*)(student_data-> id);
-	char *name=(char*)(student_data-> name);
-	printf("%s %s:", id, name);
-	int length=list_size(student_grades);// student_data->num_of_course
-	struct node *curr_course=list_begin(student_grades);
-	if(!curr_course){
-		return;
-	}
-	for(int i=0; i<(length-1); i++){
-		char *course=(char*)(curr_course->course_data->course_name);
-		char *grade=(char*)(curr_course->course_data->grade);
-		
-		printf("%s %s,", course, grade);
-		curr_course=list_next(curr_course);
-	}
-		char *course=(char*)(curr_course->course_data->course_name);
-		char *grade=(char*)(curr_course->course_data->grade);
-		
-		printf("%s %s\n", course, grade);
-
-	}
-
-static struct node *find_id(int id,struct list *list){
-
-		struct node *curr_student= list_begin(list);
+static node *find_id(int id,list **list){
+	    node *curr_student = list_begin(*list);
 		while(curr_student){
-			int curr_id=(int)(curr_student-> student_data-> id);
+			student_data *new_student=list_get(curr_student);
+			int curr_id=(int)(new_student->id);
 			if(curr_id == id){
 				return curr_student;
 			}
@@ -327,13 +49,51 @@ static struct node *find_id(int id,struct list *list){
 		}
 		return NULL;
 }
+static int course_init(list *list, const char *name, int grade){
 
-static struct node *find_course(const char *name,struct list *list){ 
+	course_data *new_course_data;
+	int new_course;
+	new_course_data=(course_data*)malloc(sizeof(course_data));
+	if (!new_course_data) {
+			free(new_course_data);
+			return 0;
+	}
+	else{
+	
+	
+	(new_course_data -> grade) = grade;
+	strcpy((new_course_data->course_name),name);
+	new_course=list_push_back(list,new_course_data);
+	free(new_course_data);
+	}
+	return new_course;
+}
+static int student_init(list *list, const char *name, int id){
 
-		struct node *curr_course = list_begin(list);
+	student_data *new_student_data;
+	int new;
+	new_student_data=(student_data*)malloc(sizeof(student_data));
+	if (!new_student_data ) {
+			free(new_student_data);
+			return 0;
+	}
+	else{
+	//new_student_data->student_grades=list_init(clone,destroy);//do funcs
+	(new_student_data -> id)=id;
+	strcpy((new_student_data->name),name);
+	new_student_data->avg=0;
+	new_student_data->num_of_course=0;
+	new =list_push_back(list,new_student_data);
+	free(new_student_data);
+	}
+	return new;
+}
+static node *find_course(const char *name,list **list){ 
+		node *curr_course = list_begin(*list);
 		while(curr_course){
-			const char *curr_course=(const char*)(curr_course-> course_data->course_name);
-			if(!strcmp(curr_course,name)){
+			course_data *curr_course_data=list_get(curr_course);
+			const char *curr_course_name=(curr_course_data->course_name);
+			if(!strcmp(curr_course_name,name)){
 				return curr_course;
 			}
 			else{
@@ -342,50 +102,235 @@ static struct node *find_course(const char *name,struct list *list){
 		}
 		return NULL;
 }
-static int student_init(struct list *list, const char *name, int id){
-
-	struct student_data *new_student_data;
-	struct node *new_node;
-	int a;
-	new_student_data=(struct student_data*)malloc(sizeof(struct student_data));
-	new_node=(struct node*)malloc(sizeof(node));
-	if (!new_student_data || !new_node) {
-			free(new_student_data);
-			free(new_node);
-			exit;
+float grades_calc_avg(struct grades *grades, int id, char **out){
+	if (!grades ||!out|| !id) {
+			//print_no_can_do, do
+		return -1;
 	}
 	else{
-	new_student_data->student_grades=list_init(clone,destroy);//do funcs
-	(new_student_data -> id)=id;
-	strcpy((new_student_data->name),name);
-	new_student_data->avg=0;
-	new_student_data->num_of_course=0;
-	a =list_insert(list, new_node, new_student_data);
-	free(new_student_data);
+		struct student_data *curr_student_data;
+		struct node *curr_node = find_id(id,(grades->students));
+		if(!curr_node){
+			//no cant_do
+			return -1;
+
+		}
+		else{
+			curr_student_data=list_get(curr_node);
+			*out=curr_student_data->name;
+			return (curr_student_data->avg);
+		}
 	}
-	return a;
+	return -1;	
 }
-static int course_init(struct list *list, const char *name, int grade){
+int grades_add_grade(struct grades *grades,const char *name,int id,int grade){
 
-	struct course_data *new_course_data;
-	struct node *new_node;
-	int a;
-	new_course_data=(struct course_data*)malloc(sizeof(struct course_data));
-	new_node=(struct node*)malloc(sizeof(struct node));
-	if (!new_course_data|| !new_node) {
-			free(new_course_data);
-			free(new_node);
-			exit;
+	if(!grades ||(grade <0)||(grade>100)|| !id){
+		return EXIT; 
+		}
+
+	else{
+		student_data *curr_student_data;
+		node *curr_node = find_id(id,(grades->students));
+		if(curr_node){
+			curr_student_data=list_get(curr_node);
+			if(!find_course(name,(curr_student_data->student_grades))){
+				/* clc the new avg*/
+				int temp_avg=curr_student_data->avg;
+				int temp_num=curr_student_data->num_of_course;
+				curr_student_data->avg=(temp_avg+grade/(temp_num+1));
+				curr_student_data->num_of_course=temp_num+1;
+				if(!course_init(*(curr_student_data->student_grades) ,name,grade)){
+					return EXIT;
+				}
+				else{
+					return SUCCESS;
+				}
+			}
+			else{
+				return EXIT;
+			}
+		}
+	}
+	return SUCCESS; //? not EXIT?
+}
+
+int grades_add_student(struct grades *grades, const char *name, int id){
+	if (!grades || !name || !id) {
+		return EXIT; 
 	}
 	else{
-	
-	(new_course_data -> grade) = grade;
-	strcpy((new_course_data->course_name),name);
+		struct node *curr_node =find_id(id,(grades->students));
+		if(!curr_node){
+			return student_init(*(grades->students),name,id);
+		}
 
-	 a = list_insert(list, new_node, new_course_data);
-	free(new_course_data);
 	}
-	return a;
+	
+	return EXIT;
+}
+
+int grades_print_student(struct grades *grades, int id){
+	if (!grades || !id) {
+		
+		return EXIT; 
+	}
+	else{
+		struct student_data *curr_student_data;
+
+		curr_student_data = (student_data*)find_id(id,(grades->students));
+		
+		if(!curr_student_data){
+			return EXIT;
+
+		}
+		else{
+
+			/*if(print_grades(curr_student_data,(curr_student_data->student_grades))){
+				return EXIT;
+			}
+			else{
+				return SUCCESS;
+			}*/
+			return print_grades(curr_student_data,(curr_student_data->student_grades));
+			
+		}
+	}
+	return EXIT;
+
+}
+
+int grades_print_all(struct grades *grades){
+
+	if (!grades) {
+		
+		return EXIT; 
+	}
+	struct node *student_temp=list_begin(*(grades->students));
+
+	while(student_temp){
+		student_data *student_d =list_get(student_temp);
+		int temp_id=(int)(student_d->id);
+		if(!grades_print_student(grades,temp_id)){
+			student_temp=list_next(student_temp);
+			//temp_id=(int)(student_d->id);
+		}
+		else {
+			return EXIT;
+		}
+
+		return SUCCESS;
+	}
+	return SUCCESS;
+}
+
+static int print_grades(struct student_data *student_data, list **student_grades){ //static?
+	if (!student_data || !student_grades) {
+		
+		return EXIT; 
+	}
+	int id=student_data-> id;
+	char *name=(char*)(student_data-> name);
+	printf("%d %s:", id, name);
+	struct node *curr_student_course=list_begin(*student_grades);
+	
+	if(!curr_student_course){
+		return EXIT;
+	}
+	while(curr_student_course){
+		course_data *curr_course_data=list_get(curr_student_course);
+		if(!curr_course_data){
+		return EXIT;
+		}
+
+		const char *curr_course_name=(curr_course_data->course_name);
+
+		//char course=(char)(curr_student_course->course_data->list_get(course_data));
+		int grade=(curr_course_data->grade);
+		
+		printf("%s %d,", curr_course_name, grade);
+		curr_student_course=list_next(curr_student_course);
+	}
+		//char course=(char)(curr_course->course_data->course_name);
+		course_data *curr_course_data=list_get(curr_student_course);
+		if(!curr_course_data){
+		return EXIT;
+		}
+		const char *curr_course_name=(curr_course_data->course_name);
+		int grade=(curr_course_data->grade);
+		
+		printf("%s %d\n", curr_course_name, grade);
+
+		return SUCCESS;
+
+	}
+
+grades* grades_init(){ 
+    grades *grades_new;
+    list **studets_list;
+	grades_new=(grades*)(malloc(sizeof(grades)));
+	studets_list=(list**)(malloc(sizeof(list*)));
+	if (!grades_new || !studets_list) {
+		/* Out of memory - must free what was allocated */
+		free(grades_new);
+		free(studets_list);
+		return NULL;
+	}
+	*studets_list=list_init(student_data_clone,student_data_destroy);
+	grades_new-> students = studets_list;
+	return grades_new;
+}
+void  course_data_destroy (void *elem){
+	course_data *to_be_destroy=(course_data*)elem;
+	free((to_be_destroy->course_name));
+	free(elem);
+	
+}
+void student_data_destroy (void *elem){
+	student_data *to_be_destroy=(student_data*)elem;
+	free((to_be_destroy->name));
+	/*free the course list*/
+	list_destroy(*(to_be_destroy->student_grades));
+	free(elem);
+	
+}
+int student_data_clone(void *elem, void **out){
+	char *temp=NULL;
+	course_data *to_be_clone = (course_data*)elem;
+	strcpy(temp,(to_be_clone->course_name));
+	//char *new_name= (char*)malloc(sizeof(char*)*(strlen(temp)+1));
+	*out=(course_data*)malloc(sizeof(course_data));
+    if (!out) {
+    	//free(new_name);
+    	free(out);
+        return EXIT;
+    }
+    else{
+    *out=to_be_clone;
+    //strcpy((out->course_name),(to_be_clone->course_name));
+    }
+    return 0;
+}
+
+int course_data_clone (void *elem, void **out){
+	char *temp=NULL;
+	course_data *to_be_clone =(course_data*)elem;
+	strcpy(temp,(to_be_clone->course_name));
+	//char *new_name= (char*)malloc(sizeof(char*)*(strlen(temp)+1));
+	*out=(course_data*)malloc(sizeof(course_data));
+    if (!out) {
+    	//free(new_name);
+    	free(out);
+        return EXIT;
+    }
+    else{
+    *out=to_be_clone;
+    }
+    return 0;
+}
+void grades_destroy(struct grades *grades){
+	list_destroy(*(grades->students));
+	free(grades);
 }
 
 
