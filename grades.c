@@ -68,15 +68,18 @@ static int course_init(list *list, const char *name, int grade){
 	}
 	return new_course;
 }
-static int student_init(list *list, const char *name, int id){
+static int student_init(list *list_list, const char *name, int id){
 
 	student_data *new_student_data;
 	int new;
+	struct list **new_list;
+	new_list= (list**)(malloc(sizeof(list*)));
 	new_student_data=(student_data*)malloc(sizeof(student_data));
 	new_student_data->name=(char*)malloc(sizeof(char*)*(strlen(name)+1));
-	if (!new_student_data|| !(new_student_data->name) ) {
+	if (!new_student_data|| !(new_student_data->name) ||!new_list) {
 			free(new_student_data);
 			free(new_student_data->name);
+			free(new_list);
 			return 0;
 	}
 	else{
@@ -85,8 +88,9 @@ static int student_init(list *list, const char *name, int id){
 	strcpy((new_student_data->name),name);
 	new_student_data->avg=0;
 	new_student_data->num_of_course=0;
-	new =list_push_back(list,new_student_data);
-	free(new_student_data);
+	*new_list=list_init(course_data_clone,course_data_destroy);
+	new_student_data->student_grades=new_list;
+	new =list_push_back(list_list,new_student_data);
 	}
 	return new;
 }
@@ -142,7 +146,7 @@ int grades_add_grade(struct grades *grades,const char *name,int id,int grade){
 				int temp_num=curr_student_data->num_of_course;
 				curr_student_data->avg=((temp_avg*temp_num+grade)/(temp_num+1));
 				curr_student_data->num_of_course=temp_num+1;
-				if(!course_init(*(curr_student_data->student_grades) ,name,grade)){
+				if(!course_init(*(curr_student_data->student_grades),name,grade)){
 					return EXIT;
 				}
 				else{
@@ -216,7 +220,6 @@ int grades_print_all(struct grades *grades){
 			return EXIT;
 		}
 
-		return SUCCESS;
 	}
 	return SUCCESS;
 }
@@ -227,7 +230,6 @@ static int print_grades(student_data *student_data, list **student_grades){ //st
 		return EXIT; 
 	}
 	int id=student_data-> id;
-	//char *name=*(student_data-> name);
 	printf("%d %s:", id,(student_data-> name));
 	struct node *curr_student_course=list_begin(*student_grades);
 	if(list_begin(*student_grades)==list_end(*student_grades)){
