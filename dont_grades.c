@@ -70,11 +70,11 @@ static int student_init(list *list_list, const char *name, int id){
 
 	student_data *new_student_data;
 	int new;
-	
+	list **course_list;
 	new_student_data=(student_data*)malloc(sizeof(student_data));
 	new_student_data->name=(char*)malloc(sizeof(char*)*(strlen(name)+1));
-	new_student_data->student_grades= (list**)(malloc(sizeof(list*)));
-	if (!new_student_data|| !(new_student_data->name) ||!(new_student_data->student_grades)) {
+	course_list= (list**)(malloc(sizeof(list*)));
+	if (!new_student_data|| !(new_student_data->name) ||!course_list) {
 			free(new_student_data->name);
 			free(new_student_data);
 			free(new_student_data->student_grades);
@@ -86,7 +86,8 @@ static int student_init(list *list_list, const char *name, int id){
 	strcpy((new_student_data->name),name);
 	new_student_data->avg=0;
 	new_student_data->num_of_course=0;
-	*new_student_data->student_grades=list_init(course_data_clone,course_data_destroy);
+	*course_list=list_init(course_data_clone,course_data_destroy);
+	new_student_data->student_grades=course_list;
 	new =list_push_back(list_list,new_student_data);
 	}
 	return new;
@@ -294,7 +295,7 @@ int student_data_clone(void *elem, void **out){
 	list **new_list;
 	student_data *new_out;
 	new_list=(list**)malloc(sizeof(list*));
-	list_init(course_data_clone,course_data_destroy);
+	*new_list=list_init(course_data_clone,course_data_destroy);
 	char *new_name;
 	new_name=(char*)malloc(sizeof(char*)*(strlen(to_be_clone->name)+1));
 	new_out=(student_data*)(malloc(sizeof(student_data)));
