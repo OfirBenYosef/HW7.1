@@ -47,7 +47,7 @@ static node *find_id(int id,list *list){
 				curr_student=list_next(curr_student);
 			}
 		}
-		return NULL;
+		return 0;
 }
 static int course_init(list *list, const char *name, int grade){
 	course_data *new_course_data;
@@ -75,7 +75,7 @@ static int student_init(list *list_list, const char *name, int id){
 	new_student_data=(student_data*)malloc(sizeof(student_data));
 	new_student_data->name=(char*)malloc(sizeof(char*)*(strlen(name)+1));
 	//new_student_data->student_grades=(list*)(malloc(sizeof(list*)));
-	if ( !(new_student_data->name) ||!(new_student_data->student_grades)) {
+	if ( !(new_student_data) ||!(new_student_data->name)) {
 			free(new_student_data->name);
 			//list_destroy((new_student_data->student_grades));//?
 			//free(new_student_data->student_grades);
@@ -92,8 +92,9 @@ static int student_init(list *list_list, const char *name, int id){
 	//new_student_data->student_grades=0;
 	new =list_push_back(list_list,new_student_data);
 	
-	free(new_student_data->name);
+	
 	list_destroy((new_student_data->student_grades));
+	free(new_student_data->name);
 	//free((new_student_data->student_grades));
 	free(new_student_data);
 	
@@ -130,6 +131,7 @@ float grades_calc_avg(struct grades *grades, int id, char **out){
 		}
 		else{
 			curr_student_data=list_get(curr_node);
+			//strcpy(out,curr_student_data->name);
 			*out=curr_student_data->name;
 			return (curr_student_data->avg);
 		}
@@ -173,7 +175,9 @@ int grades_add_student(struct grades *grades, const char *name, int id){
 		if(!curr_node){
 			return (student_init((grades->students),name,id));
 		}
-
+		else{
+			return 	EXIT;
+		}
 	}
 	
 	return EXIT;
@@ -332,7 +336,7 @@ int student_data_clone(void *elem, void **out){
 	char *new_name;
 	new_name=(char*)malloc(sizeof(char*)*(strlen(to_be_clone->name)+1));
 	new_out=(student_data*)(malloc(sizeof(student_data)));
-	if (!out ||!new_name){
+	if (!new_out ||!new_name){
 		free(new_name);
     	//free(new_list);
     	free(new_out);
